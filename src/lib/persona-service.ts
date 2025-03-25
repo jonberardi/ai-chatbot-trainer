@@ -1,175 +1,112 @@
-import { Persona, EvaluationCriterion, ApiResponse } from './types';
+import { D1Database } from '@cloudflare/workers-types';
+import { Persona } from './types';
 
-/**
- * Get all personas
- * @param {D1Database} db - D1 database instance
- * @returns {Promise<Persona[]>} - Array of personas
- */
-export async function getPersonas(db) {
-  try {
-    const personas = await db.prepare('SELECT * FROM personas ORDER BY name').all();
-    return personas.results;
-  } catch (error) {
-    console.error('Error fetching personas:', error);
-    throw new Error('Failed to fetch personas');
-  }
+export async function getPersonas(db: D1Database): Promise<Persona[]> {
+  const { results } = await db.prepare('SELECT * FROM personas ORDER BY id DESC').all();
+
+  return (results || []).map((row) => ({
+    id: Number(row.id),
+    name: String(row.name),
+    background: String(row.background),
+    expertise: String(row.expertise),
+    personality: String(row.personality),
+    avatar_url: row.avatar_url ? String(row.avatar_url) : undefined,
+    conversation_style: String(row.conversation_style),
+    knowledge_domains: String(row.knowledge_domains),
+    difficulty_level: String(row.difficulty_level),
+    created_at: String(row.created_at),
+    updated_at: String(row.updated_at),
+  }));
 }
 
-/**
- * Get a persona by ID
- * @param {D1Database} db - D1 database instance
- * @param {number} id - Persona ID
- * @returns {Promise<Persona>} - Persona object
- */
-export async function getPersonaById(db, id) {
-  try {
-    const persona = await db.prepare('SELECT * FROM personas WHERE id = ?').bind(id).first();
-    if (!persona) {
-      throw new Error('Persona not found');
-    }
-    return persona;
-  } catch (error) {
-    console.error(`Error fetching persona ${id}:`, error);
-    throw new Error('Failed to fetch persona');
-  }
+export async function getPersonaById(db: D1Database, id: number): Promise<Persona | null> {
+  const row = await db.prepare('SELECT * FROM personas WHERE id = ?').bind(id).first();
+
+  if (!row) return null;
+
+  return {
+    id: Number(row.id),
+    name: String(row.name),
+    background: String(row.background),
+    expertise: String(row.expertise),
+    personality: String(row.personality),
+    avatar_url: row.avatar_url ? String(row.avatar_url) : undefined,
+    conversation_style: String(row.conversation_style),
+    knowledge_domains: String(row.knowledge_domains),
+    difficulty_level: String(row.difficulty_level),
+    created_at: String(row.created_at),
+    updated_at: String(row.updated_at),
+  };
 }
 
-/**
- * Create a new persona
- * @param {D1Database} db - D1 database instance
- * @param {Partial<Persona>} personaData - Persona data
- * @returns {Promise<ApiResponse<Persona>>} - API response with created persona
- */
-export async function createPersona(db, personaData) {
-  try {
-    const { name, background, expertise, personality, avatar_url, conversation_style, knowledge_domains, difficulty_level } = personaData;
-    
-    const result = await db.prepare(`
-      INSERT INTO personas (name, background, expertise, personality, avatar_url, conversation_style, knowledge_domains, difficulty_level)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(
+export async function createPersona(db: D1Database, personaData: Partial<Persona>) {
+  const {
+    name,
+    background,
+    expertise,
+    personality,
+    avatar_url,
+    conversation_style,
+    knowledge_domains,
+    difficulty_level
+  } = personaData;
+
+  if (!name || !background || !expertise || !personality || !conversation_style || !knowledge_domains || !difficulty_level) {
+    return { success: false, error: 'Missing required fields' };
+  }
+
+  await db
+    .prepare(
+      'INSERT INTO personas (name, background, expertise, personality, avatar_url, conversation_style, knowledge_domains, difficulty_level) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    )
+    .bind(
       name,
       background,
       expertise,
       personality,
-      avatar_url || null,
+      avatar_url ?? null,
       conversation_style,
       knowledge_domains,
       difficulty_level
-    ).run();
-    
-    if (!result.success) {
-      throw new Error('Failed to create persona');
-    }
-    
-    const newPersona = await getPersonaById(db, result.meta.last_row_id);
-    
-    return {
-      success: true,
-      data: newPersona
-    };
-  } catch (error) {
-    console.error('Error creating persona:', error);
-    return {
-      success: false,
-      error: 'Failed to create persona'
-    };
-  }
+    )
+    .run();
+
+  return { success: true };
 }
 
-/**
- * Update an existing persona
- * @param {D1Database} db - D1 database instance
- * @param {number} id - Persona ID
- * @param {Partial<Persona>} personaData - Updated persona data
- * @returns {Promise<ApiResponse<Persona>>} - API response with updated persona
- */
-export async function updatePersona(db, id, personaData) {
-  try {
-    // First check if persona exists
-    const existingPersona = await getPersonaById(db, id);
-    
-    const { name, background, expertise, personality, avatar_url, conversation_style, knowledge_domains, difficulty_level } = personaData;
-    
-    const result = await db.prepare(`
-      UPDATE personas
-      SET name = ?, background = ?, expertise = ?, personality = ?, 
-          avatar_url = ?, conversation_style = ?, knowledge_domains = ?, 
-          difficulty_level = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `).bind(
-      name || existingPersona.name,
-      background || existingPersona.background,
-      expertise || existingPersona.expertise,
-      personality || existingPersona.personality,
-      avatar_url !== undefined ? avatar_url : existingPersona.avatar_url,
-      conversation_style || existingPersona.conversation_style,
-      knowledge_domains || existingPersona.knowledge_domains,
-      difficulty_level || existingPersona.difficulty_level,
+export async function updatePersona(db: D1Database, id: number, personaData: Partial<Persona>) {
+  const {
+    name,
+    background,
+    expertise,
+    personality,
+    avatar_url,
+    conversation_style,
+    knowledge_domains,
+    difficulty_level
+  } = personaData;
+
+  await db
+    .prepare(
+      'UPDATE personas SET name = ?, background = ?, expertise = ?, personality = ?, avatar_url = ?, conversation_style = ?, knowledge_domains = ?, difficulty_level = ? WHERE id = ?'
+    )
+    .bind(
+      name,
+      background,
+      expertise,
+      personality,
+      avatar_url ?? null,
+      conversation_style,
+      knowledge_domains,
+      difficulty_level,
       id
-    ).run();
-    
-    if (!result.success) {
-      throw new Error('Failed to update persona');
-    }
-    
-    const updatedPersona = await getPersonaById(db, id);
-    
-    return {
-      success: true,
-      data: updatedPersona
-    };
-  } catch (error) {
-    console.error(`Error updating persona ${id}:`, error);
-    return {
-      success: false,
-      error: 'Failed to update persona'
-    };
-  }
+    )
+    .run();
+
+  return { success: true };
 }
 
-/**
- * Delete a persona
- * @param {D1Database} db - D1 database instance
- * @param {number} id - Persona ID
- * @returns {Promise<ApiResponse<{ id: number }>>} - API response with deleted persona ID
- */
-export async function deletePersona(db, id) {
-  try {
-    // First check if persona exists
-    await getPersonaById(db, id);
-    
-    const result = await db.prepare('DELETE FROM personas WHERE id = ?').bind(id).run();
-    
-    if (!result.success) {
-      throw new Error('Failed to delete persona');
-    }
-    
-    return {
-      success: true,
-      data: { id }
-    };
-  } catch (error) {
-    console.error(`Error deleting persona ${id}:`, error);
-    return {
-      success: false,
-      error: 'Failed to delete persona'
-    };
-  }
-}
-
-/**
- * Get evaluation criteria for a persona
- * @param {D1Database} db - D1 database instance
- * @param {number} personaId - Persona ID
- * @returns {Promise<EvaluationCriterion[]>} - Array of evaluation criteria
- */
-export async function getPersonaCriteria(db, personaId) {
-  try {
-    const criteria = await db.prepare('SELECT * FROM evaluation_criteria WHERE persona_id = ? ORDER BY weight DESC').bind(personaId).all();
-    return criteria.results;
-  } catch (error) {
-    console.error(`Error fetching criteria for persona ${personaId}:`, error);
-    throw new Error('Failed to fetch evaluation criteria');
-  }
+export async function deletePersona(db: D1Database, id: number) {
+  await db.prepare('DELETE FROM personas WHERE id = ?').bind(id).run();
+  return { success: true };
 }

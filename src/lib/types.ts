@@ -80,3 +80,6 @@ export interface ApiResponse<T> {
   data?: T;
   error?: string;
 }
+
+// 🔑 Add reusable type for DB instance
+export type DB = D1Database;
