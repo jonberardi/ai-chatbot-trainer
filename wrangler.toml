@@ -1,0 +1,7 @@
+name = "ai-chatbot-trainer"
+compatibility_date = "2025-03-25"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ai-chatbot-trainer"
+database_id = "YOUR_DATABASE_ID"
