@@ -9,9 +9,9 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const ScoreCard = ({ score, criteria, evaluations }) => {
   // Calculate scores for each criterion
   const criteriaScores = criteria.map(criterion => {
-    const criterionEvals = evaluations.filter(e => e.criteria_id === criterion.id);
+    const criterionEvals = evaluations.filter(evaluation => evaluation.criteria_id === criterion.id);
     if (criterionEvals.length === 0) return 0;
-    return criterionEvals.reduce((sum, e) => sum + e.score, 0) / criterionEvals.length;
+    return criterionEvals.reduce((sum, evaluation) => sum + evaluation.score, 0) / criterionEvals.length;
   });
 
   // Prepare chart data
@@ -54,12 +54,13 @@ const ScoreCard = ({ score, criteria, evaluations }) => {
             const label = context.label || '';
             const value = context.raw.toFixed(1);
             return `${label}: ${value}/5`;
-          },
-        },
-      },
+          }
+        }
+      }
     },
   };
 
+  // Get score color based on value
   const getScoreColor = (score) => {
     if (score >= 4.5) return 'text-green-600';
     if (score >= 3.5) return 'text-blue-600';
@@ -68,6 +69,7 @@ const ScoreCard = ({ score, criteria, evaluations }) => {
     return 'text-red-600';
   };
 
+  // Get score label based on value
   const getScoreLabel = (score) => {
     if (score >= 4.5) return 'Excellent';
     if (score >= 3.5) return 'Good';
@@ -101,11 +103,10 @@ const ScoreCard = ({ score, criteria, evaluations }) => {
         <h3 className="text-xl font-semibold mb-4">Criteria Breakdown</h3>
         <div className="space-y-4">
           {criteria.map((criterion, index) => {
-            const criterionEvals = evaluations.filter(e => e.criteria_id === criterion.id);
-            const avgScore =
-              criterionEvals.length > 0
-                ? criterionEvals.reduce((sum, e) => sum + e.score, 0) / criterionEvals.length
-                : 0;
+            const criterionEvals = evaluations.filter(evaluation => evaluation.criteria_id === criterion.id);
+            const avgScore = criterionEvals.length > 0
+              ? criterionEvals.reduce((sum, evaluation) => sum + evaluation.score, 0) / criterionEvals.length
+              : 0;
 
             return (
               <div key={criterion.id} className="border-b pb-4">
