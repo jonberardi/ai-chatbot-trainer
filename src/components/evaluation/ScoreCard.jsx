@@ -9,8 +9,8 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const ScoreCard = ({ score, criteria, evaluations }) => {
   // Calculate scores for each criterion
   const criteriaScores = criteria.map(criterion => {
-    const criterionEvals = evaluations.filter(eval => eval.criteria_id === criterion.id);
-    if (criterionEvals.length === 0) return 0;
+    const criterionEvals = evaluations.filter(e => e.criteria_id === criterion.id);
+        if (criterionEvals.length === 0) return 0;
     return criterionEvals.reduce((sum, eval) => sum + eval.score, 0) / criterionEvals.length;
   });
 
