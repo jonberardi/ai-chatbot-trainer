@@ -102,7 +102,7 @@ const ScoreCard = ({ score, criteria, evaluations }) => {
       <div className="mt-8">
         <h3 className="text-xl font-semibold mb-4">Criteria Breakdown</h3>
         <div className="space-y-4">
-          {criteria.map((criterion, index) => {
+          {criteria.map((criterion) => {
             const criterionEvals = evaluations.filter(evaluation => evaluation.criteria_id === criterion.id);
             const avgScore = criterionEvals.length > 0
               ? criterionEvals.reduce((sum, evaluation) => sum + evaluation.score, 0) / criterionEvals.length
