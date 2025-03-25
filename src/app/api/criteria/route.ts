@@ -7,14 +7,18 @@ import {
   updateCriterion,
   deleteCriterion
 } from '../../../lib/criteria-service';
+
+// Helper to safely extract Cloudflare DB binding
+const getDB = (request: NextRequest) => (request as any).cf.env.DB;
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
   const personaId = searchParams.get('personaId');
-  
+
   try {
-    const db = request.cf.env.DB;
-    
+    const db = getDB(request);
+
     if (id) {
       const criterion = await getCriterionById(db, parseInt(id));
       return NextResponse.json({ success: true, data: criterion });
@@ -36,11 +40,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const db = request.cf.env.DB;
+    const db = getDB(request);
     const criterionData = await request.json();
-    
+
     const result = await createCriterion(db, criterionData);
-    
+
     if (result.success) {
       return NextResponse.json(result);
     } else {
@@ -57,18 +61,19 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const db = request.cf.env.DB;
-    const { id, ...criterionData } = await request.json();
-    
+    const db = getDB(request);
+    const body = await request.json() as { id: number } & Record<string, any>;
+    const { id, ...criterionData } = body;
+
     if (!id) {
       return NextResponse.json(
         { success: false, error: 'Criterion ID is required' },
         { status: 400 }
       );
     }
-    
+
     const result = await updateCriterion(db, id, criterionData);
-    
+
     if (result.success) {
       return NextResponse.json(result);
     } else {
@@ -86,18 +91,18 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
-  
+
   if (!id) {
     return NextResponse.json(
       { success: false, error: 'Criterion ID is required' },
       { status: 400 }
     );
   }
-  
+
   try {
-    const db = request.cf.env.DB;
+    const db = getDB(request);
     const result = await deleteCriterion(db, parseInt(id));
-    
+
     if (result.success) {
       return NextResponse.json(result);
     } else {
