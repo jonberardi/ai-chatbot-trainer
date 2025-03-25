@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllCriteria, getCriterionById, getCriteriaByPersonaId, createCriterion, updateCriterion, deleteCriterion } from '@/lib/criteria-service';
-
+import {
+  getAllCriteria,
+  getCriterionById,
+  getCriteriaByPersonaId,
+  createCriterion,
+  updateCriterion,
+  deleteCriterion
+} from '../../../lib/criteria-service';
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
