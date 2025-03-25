@@ -24,13 +24,13 @@ ChartJS.register(
 const PerformanceChart = ({ criteria, evaluations, sessions = [] }) => {
   // Group evaluations by session
   const sessionEvaluations = sessions.map(session => {
-    const sessionEvals = evaluations.filter(eval => eval.conversation_id === session.id);
+    const sessionEvals = evaluations.filter(evaluation => evaluation.conversation_id === session.id);
     
     // Calculate average score for each criterion in this session
     const criteriaScores = criteria.map(criterion => {
-      const criterionEvals = sessionEvals.filter(eval => eval.criteria_id === criterion.id);
+      const criterionEvals = sessionEvals.filter(evaluation => evaluation.criteria_id === criterion.id);
       if (criterionEvals.length === 0) return 0;
-      return criterionEvals.reduce((sum, eval) => sum + eval.score, 0) / criterionEvals.length;
+      return criterionEvals.reduce((sum, evaluation) => sum + evaluation.score, 0) / criterionEvals.length;
     });
     
     return {
