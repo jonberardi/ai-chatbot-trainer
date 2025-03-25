@@ -10,8 +10,8 @@ const ScoreCard = ({ score, criteria, evaluations }) => {
   // Calculate scores for each criterion
   const criteriaScores = criteria.map(criterion => {
     const criterionEvals = evaluations.filter(e => e.criteria_id === criterion.id);
-        if (criterionEvals.length === 0) return 0;
-    return criterionEvals.reduce((sum, eval) => sum + eval.score, 0) / criterionEvals.length;
+    if (criterionEvals.length === 0) return 0;
+    return criterionEvals.reduce((sum, e) => sum + e.score, 0) / criterionEvals.length;
   });
 
   // Prepare chart data
@@ -50,17 +50,16 @@ const ScoreCard = ({ score, criteria, evaluations }) => {
       },
       tooltip: {
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             const label = context.label || '';
             const value = context.raw.toFixed(1);
             return `${label}: ${value}/5`;
-          }
-        }
-      }
+          },
+        },
+      },
     },
   };
 
-  // Get score color based on value
   const getScoreColor = (score) => {
     if (score >= 4.5) return 'text-green-600';
     if (score >= 3.5) return 'text-blue-600';
@@ -69,7 +68,6 @@ const ScoreCard = ({ score, criteria, evaluations }) => {
     return 'text-red-600';
   };
 
-  // Get score label based on value
   const getScoreLabel = (score) => {
     if (score >= 4.5) return 'Excellent';
     if (score >= 3.5) return 'Good';
@@ -93,21 +91,22 @@ const ScoreCard = ({ score, criteria, evaluations }) => {
             {getScoreLabel(score)}
           </div>
         </div>
-        
+
         <div className="w-48 h-48">
           <Doughnut data={chartData} options={chartOptions} />
         </div>
       </div>
-      
+
       <div className="mt-8">
         <h3 className="text-xl font-semibold mb-4">Criteria Breakdown</h3>
         <div className="space-y-4">
           {criteria.map((criterion, index) => {
-            const criterionEvals = evaluations.filter(eval => eval.criteria_id === criterion.id);
-            const avgScore = criterionEvals.length > 0
-              ? criterionEvals.reduce((sum, eval) => sum + eval.score, 0) / criterionEvals.length
-              : 0;
-            
+            const criterionEvals = evaluations.filter(e => e.criteria_id === criterion.id);
+            const avgScore =
+              criterionEvals.length > 0
+                ? criterionEvals.reduce((sum, e) => sum + e.score, 0) / criterionEvals.length
+                : 0;
+
             return (
               <div key={criterion.id} className="border-b pb-4">
                 <div className="flex justify-between items-center mb-2">
@@ -120,8 +119,8 @@ const ScoreCard = ({ score, criteria, evaluations }) => {
                   </div>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div 
-                    className="h-2.5 rounded-full bg-indigo-600" 
+                  <div
+                    className="h-2.5 rounded-full bg-indigo-600"
                     style={{ width: `${(avgScore / 5) * 100}%` }}
                   ></div>
                 </div>
