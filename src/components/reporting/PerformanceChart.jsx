@@ -102,7 +102,7 @@ const PerformanceChart = ({ criteria, evaluations, sessions = [] }) => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6">Performance Trends</h2>
+<h2 className="text-2xl font-bold mb-6">Performance Trends (Updated)</h2>
 
       {sessionEvaluations.length > 0 ? (
         <div className="w-full h-80">
