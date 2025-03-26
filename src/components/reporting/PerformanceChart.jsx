@@ -24,15 +24,22 @@ ChartJS.register(
 const PerformanceChart = ({ criteria, evaluations, sessions = [] }) => {
   // Group evaluations by session
   const sessionEvaluations = sessions.map(session => {
-    const sessionEvals = evaluations.filter(evaluation => evaluation.conversation_id === session.id);
-    
+    const sessionEvals = evaluations.filter(
+      evaluation => evaluation.conversation_id === session.id
+    );
+
     // Calculate average score for each criterion in this session
     const criteriaScores = criteria.map(criterion => {
-      const criterionEvals = sessionEvals.filter(evaluation => evaluation.criteria_id === criterion.id);
+      const criterionEvals = sessionEvals.filter(
+        evaluation => evaluation.criteria_id === criterion.id
+      );
       if (criterionEvals.length === 0) return 0;
-      return criterionEvals.reduce((sum, evaluation) => sum + evaluation.score, 0) / criterionEvals.length;
+      return (
+        criterionEvals.reduce((sum, evaluation) => sum + evaluation.score, 0) /
+        criterionEvals.length
+      );
     });
-    
+
     return {
       sessionId: session.id,
       sessionTitle: session.title || `Session ${session.id}`,
@@ -40,10 +47,10 @@ const PerformanceChart = ({ criteria, evaluations, sessions = [] }) => {
       scores: criteriaScores,
     };
   });
-  
+
   // Sort sessions by date
   sessionEvaluations.sort((a, b) => a.date - b.date);
-  
+
   // Prepare chart data
   const chartData = {
     labels: criteria.map(c => c.name),
@@ -55,7 +62,7 @@ const PerformanceChart = ({ criteria, evaluations, sessions = [] }) => {
       borderWidth: 1,
     })),
   };
-  
+
   // Chart options
   const chartOptions = {
     responsive: true,
@@ -79,7 +86,7 @@ const PerformanceChart = ({ criteria, evaluations, sessions = [] }) => {
       },
     },
   };
-  
+
   // Helper function to get colors for chart
   function getColor(index, alpha) {
     const colors = [
@@ -90,14 +97,13 @@ const PerformanceChart = ({ criteria, evaluations, sessions = [] }) => {
       `rgba(255, 159, 64, ${alpha})`,
       `rgba(255, 99, 132, ${alpha})`,
     ];
-    
     return colors[index % colors.length];
   }
-  
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-6">Performance Trends</h2>
-      
+
       {sessionEvaluations.length > 0 ? (
         <div className="w-full h-80">
           <Bar data={chartData} options={chartOptions} />
@@ -105,7 +111,9 @@ const PerformanceChart = ({ criteria, evaluations, sessions = [] }) => {
       ) : (
         <div className="text-center py-10 text-gray-500">
           <p>No performance data available yet.</p>
-          <p className="text-sm mt-2">Complete more training sessions to see performance trends.</p>
+          <p className="text-sm mt-2">
+            Complete more training sessions to see performance trends.
+          </p>
         </div>
       )}
     </div>
